@@ -78,8 +78,7 @@ int main(int argc, const char * argv[])
     }
     
     
-    FILE *frangeL = fopen("./lower_range.txt","w+t") ;
-    FILE *frangeU = fopen("./upper_range.txt","w+t") ;
+    FILE *frangeL = fopen("./Range.txt","w+t") ;
     FILE *fdistrL = fopen("./lower_distri.txt","w+t") ;
     FILE *fdistrU = fopen("./upper_distri.txt","w+t") ;
     
@@ -102,9 +101,6 @@ int main(int argc, const char * argv[])
     sort( vLower.begin(), vLower.end(), comp );
     sort( vUpper.begin(), vUpper.end(), comp );
     
-    
-    
     mission( frangeL, fdistrL, vLower, LB, UB ) ;
-    mission( frangeU, fdistrU, vUpper, LB, UB ) ;
-   
+
 }
