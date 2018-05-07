@@ -22,61 +22,34 @@ bool comp( double a, double b)//Used in sort(),which is STL func.
     if ( a < b ) return true  ;
     else         return false ;
 }
-/*
-void mission( FILE *frange, FILE *fdistrib, FILE *fzero, vector<double> &vLower, vector<double> &vUpper, double LB, double UB )
-{
-    double range= ( UB - LB )/n        ;
-   
-    printf( "粒度＝%f\n", range );
-    int    *vctr= new int [ n ]          ;
-    for( int i = 0 ; i < n ; i++ )
-    {
-        vctr[i] = 0 ;
-        fprintf( frange, "%f\n", LB + i*range );
-    }
-    
-    int index = 0 ;
-    for( int i = 0 ; i < vLower.size() ; i++  )
-    {
-        index = (vLower[i]-LB)/range ;
-        vctr[index] =vctr[index] + 1 ;
-        index = (vUpper[i]-LB)/range ;
-        vctr[index] =vctr[index] + 1 ;
-    }
-    
-    for( int i = 0 ; i < n ; i++ )
-    {
-        fprintf( fdistrib, "%d\n", vctr[i] );
-        fprintf( fzero, "%d\n", 0 );
-    }
-}
-*/
+
 
 void mission( FILE *foutput, vector<double> &vLower, vector<double> &vUpper, double LB, double UB )
 {
     double range= ( UB - LB )/n        ;
     
     printf( "粒度＝%f\n", range );
-    int    *vctr= new int [ n ]          ;
+    int    *vctrL= new int [ n ]          ;
+    int    *vctrU= new int [ n ]          ;
     
     
     
     //---- Initialization ----------------------------
-    for( int i = 0 ; i < n ; i++ ){ vctr[i] = 0 ; }
+    for( int i = 0 ; i < n ; i++ ){ vctrL[i] = vctrU[i] = 0 ; }
     
     //---- Counting -----------------------------------
     int index = 0 ;
     for( int i = 0 ; i < vLower.size() ; i++  )
     {
         index = (vLower[i]-LB)/range ;
-        vctr[index] =vctr[index] + 1 ;
+        vctrL[index] =vctrL[index] + 1 ;
         index = (vUpper[i]-LB)/range ;
-        vctr[index] =vctr[index] + 1 ;
+        vctrU[index] =vctrU[index] + 1 ;
     }
     //---- Output -----------------------------------
     for( int i = 0 ; i < n ; i++ )
     {
-        fprintf( foutput, "%f \t %d \n", LB + i*range, vctr[i] );
+        fprintf( foutput, "%f \t %d %d \n", LB + i*range, vctrL[i], vctrU[i] );
     }
 }
 
@@ -85,6 +58,8 @@ int main(int argc, const char * argv[])
     if( argc < 4 )
     {
         printf("./dist input.txt L U\n") ;
+        printf("Output = output.txt, which is gnuplot-format:\n") ;
+        printf("year L-count U-count  \n") ;
         return -1 ;
     }
     
