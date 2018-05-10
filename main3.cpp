@@ -13,6 +13,7 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <math.h>
 #define n 100
 using namespace std ;
 
@@ -23,22 +24,28 @@ bool comp( double a, double b)//Used in sort(),which is STL func.
     else         return false ;
 }
 
+double CDF( double x, double m, double s )
+{
+    
+	//double cdf = 0.5*( 1 + erf( (year - avg)/(sd*sqrt(2)) ) );
+    double cdf = 0.5 * erfc(-(x-m)/(s*sqrt(2))) ;
+	return cdf ;
+}
 
-void mission( FILE *foutput, vector<double> &vLower, vector<double> &vUpper, double LB, double UB )
+void mission( FILE *foutput1 , FILE *foutput2, vector<double> &vLower, vector<double> &vUpper, double LB, double UB )
 {
     double range= ( UB - LB )/n        ;
     
     printf( "粒度＝%f\n", range );
     int    *vctrL= new int [ n ]          ;
     int    *vctrU= new int [ n ]          ;
-    
+    double  *vprob= new double  [ 1000 ]          ;
     
     
     //---- Initialization ----------------------------
     for( int i = 0 ; i < n ; i++ ){ vctrL[i] = vctrU[i] = 0 ; }
     
-    //---- Counting -----------------------------------
-    int index = 0 ;
+	int index = 0 ;
     for( int i = 0 ; i < vLower.size() ; i++  )
     {
         index = (vLower[i]-LB)/range ;
@@ -46,11 +53,31 @@ void mission( FILE *foutput, vector<double> &vLower, vector<double> &vUpper, dou
         index = (vUpper[i]-LB)/range ;
         vctrU[index] =vctrU[index] + 1 ;
     }
+    
+    double avg_prob = 0 ;
+	double mean = (UB+LB)/2 ;
+	printf("設定中間值=%f\n", mean);
+    for( int i = 0 ; i < vLower.size() ; i++  )
+    {
+        double avg_ins = ( vLower[i] + vUpper[i] )/2 ;
+        double sd_ins  = ( vUpper[i] - vLower[i] )*0.95/6;
+		double cdf1 =  CDF( mean*1.1, avg_ins, sd_ins ) ;
+		double cdf2 =  CDF( mean*0.9, avg_ins, sd_ins ) ;
+        vprob[i] = cdf1 - cdf2 ;
+        avg_prob += vprob[i] ;
+		printf("avg_ins = %f, sd_ins = %f : %f %f\n", avg_ins, sd_ins, cdf1, cdf2);
+    }
     //---- Output -----------------------------------
     for( int i = 0 ; i < n ; i++ )
     {
-        fprintf( foutput, "%f \t %d %d \n", LB + i*range, vctrL[i], vctrU[i] );
+        fprintf( foutput1, "%f \t %d %d\n", LB + i*range, vctrL[i], vctrU[i] );
     }
+    for( int i = 0 ; i < vLower.size()  ; i++ )
+    {
+        fprintf( foutput2, "Instance(%d): \t %f %f %f \n", i, vLower[i], vUpper[i], vprob[i] );
+    }
+    avg_prob /= vLower.size() ;
+    printf( "平均機率＝%f\n", avg_prob );
 }
 
 int main(int argc, const char * argv[])
@@ -76,7 +103,8 @@ int main(int argc, const char * argv[])
     }
     
     
-    FILE *foutput = fopen("./output.txt","w+t") ;
+    FILE *foutput1 = fopen("./output_LT_Dist.txt","w+t") ;
+    FILE *foutput2 = fopen("./output_LT_Prob.txt","w+t") ;
     
     
     vector< double > vUpper ;
@@ -96,9 +124,9 @@ int main(int argc, const char * argv[])
     }
     
     //--------------- Sort in increasing order -------------------------------------
-    sort( vLower.begin(), vLower.end(), comp );
-    sort( vUpper.begin(), vUpper.end(), comp );
+    //sort( vLower.begin(), vLower.end(), comp );
+    //sort( vUpper.begin(), vUpper.end(), comp );
     
-    mission( foutput, vLower, vUpper, LB, UB ) ;
+    mission( foutput1, foutput2, vLower, vUpper, LB, UB ) ;
 
 }
