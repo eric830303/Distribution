@@ -65,7 +65,7 @@ void mission( FILE *foutput1 , FILE *foutput2, vector<double> &vLower, vector<do
 		double cdf2 =  CDF( mean*0.9, avg_ins, sd_ins ) ;
         vprob[i] = cdf1 - cdf2 ;
         avg_prob += vprob[i] ;
-		printf("avg_ins = %f, sd_ins = %f : %f %f\n", avg_ins, sd_ins, cdf1, cdf2);
+		//printf("avg_ins = %f, sd_ins = %f : %f %f\n", avg_ins, sd_ins, cdf1, cdf2);
     }
     //---- Output -----------------------------------
     for( int i = 0 ; i < n ; i++ )
@@ -84,27 +84,32 @@ int main(int argc, const char * argv[])
 {
     if( argc < 4 )
     {
-        printf("./dist input.txt L U\n") ;
-        printf("Output = output.txt, which is gnuplot-format:\n") ;
-        printf("year L-count U-count  \n") ;
+        printf("Ex:./dist bench_M_inst.txt Ｍ benchmarkname\n") ;
+        printf("Ex:./dist s38417_5_inst.txt 5 s38417\n") ;
+        printf("Ex:./dist des_5_inst.txt 3 des\n") ;
+        printf("Ex:./dist 3mp_4_inst.txt 4 3mp\n") ;
         return -1 ;
     }
     
     ifstream        finput  ;
     string          line  ;
-    double  LB = atof( argv[2] ) ;
-    double  UB = atof( argv[3] ) ;
+    double  Mean = atof(argv[2]) ;
+    string  bench= argv[3] ;
+    double  LB   = Mean - 2  ;
+    double  UB   = Mean + 2  ;
+    if( LB < 0 ){ cerr << "LB is smaller than 0\n" ; return -1 ; }
     
     finput.open( argv[1], ios::in ) ;
     
     if( !finput )
     {
-        printf("Can't Read the input file 'input.txt'\n") ;
+        printf("Can't Read the input file %s\n", argv[1] ) ;
     }
     
-    
-    FILE *foutput1 = fopen("./output_LT_Dist.txt","w+t") ;
-    FILE *foutput2 = fopen("./output_LT_Prob.txt","w+t") ;
+    string distFile = "./" + bench + "_" + to_string( (int)Mean ) + "_dist.txt" ;
+    string instFile = "./" + bench + "_" + to_string( (int)Mean ) + "_inst.txt" ;
+    FILE *foutput1 = fopen(distFile.c_str(),"w+t") ;
+    FILE *foutput2 = fopen(instFile.c_str(),"w+t") ;
     
     
     vector< double > vUpper ;
@@ -112,12 +117,13 @@ int main(int argc, const char * argv[])
     
     //--------------- Read the file ------------------------------------------------
     getline( finput, line );
+    string garbage = "";
     while( getline( finput, line ) )
     {
         double L = 0 ;
         double U = 0 ;
         istringstream   token( line )     ;
-        token >> L >> U ;
+        token >> garbage >> L >> U ;
         
         vUpper.push_back(U) ;
         vLower.push_back(L) ;
