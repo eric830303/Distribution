@@ -82,19 +82,20 @@ void mission( FILE *foutput1 , FILE *foutput2, vector<double> &vLower, vector<do
 
 int main(int argc, const char * argv[])
 {
-    if( argc < 4 )
+    if( argc < 5 )
     {
-        printf("Ex:./dist bench_M_inst.txt Ｍ benchmarkname\n") ;
-        printf("Ex:./dist s38417_5_inst.txt 5 s38417\n") ;
-        printf("Ex:./dist des_5_inst.txt 3 des\n") ;
-        printf("Ex:./dist 3mp_4_inst.txt 4 3mp\n") ;
+        printf("Ex:./dist bench_M_inst.txt Ｍ PV benchmarkname\n") ;
+        printf("Ex:./dist s38417_5_25mV_inst.txt 5 25 s38417\n") ;
+        printf("Ex:./dist des_5_15mV_inst.txt 3 15 des\n") ;
+        printf("Ex:./dist 3mp_4_20mV_inst.txt 4 20 3mp\n") ;
         return -1 ;
     }
     
     ifstream        finput  ;
     string          line  ;
     double  Mean = atof(argv[2]) ;
-    string  bench= argv[3] ;
+    int     PV   = atof(argv[3]) ;
+    string  bench= argv[4] ;
     double  LB   = Mean - 2  ;
     double  UB   = Mean + 2  ;
     if( LB < 0 ){ cerr << "LB is smaller than 0\n" ; return -1 ; }
@@ -106,8 +107,8 @@ int main(int argc, const char * argv[])
         printf("Can't Read the input file %s\n", argv[1] ) ;
     }
     
-    string distFile = "./" + bench + "_" + to_string( (int)Mean ) + "_dist.txt" ;
-    string instFile = "./" + bench + "_" + to_string( (int)Mean ) + "_inst.txt" ;
+    string distFile = "./" + bench + "_" + to_string( (int)Mean ) + "_" + to_string( PV ) + "mV_dist.txt" ;
+    string instFile = "./" + bench + "_" + to_string( (int)Mean ) + "_" + to_string( PV ) + "mV_inst.txt" ;
     FILE *foutput1 = fopen(distFile.c_str(),"w+t") ;
     FILE *foutput2 = fopen(instFile.c_str(),"w+t") ;
     
@@ -118,12 +119,13 @@ int main(int argc, const char * argv[])
     //--------------- Read the file ------------------------------------------------
     getline( finput, line );
     string garbage = "";
+    double garbage2= 0;
     while( getline( finput, line ) )
     {
         double L = 0 ;
         double U = 0 ;
         istringstream   token( line )     ;
-        token >> garbage >> L >> U ;
+        token >> garbage >> L >> U >> garbage2;
         
         vUpper.push_back(U) ;
         vLower.push_back(L) ;
